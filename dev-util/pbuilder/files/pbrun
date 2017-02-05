@@ -1,0 +1,21 @@
+#/bin/bash
+
+. /etc/pb.cfg
+
+if [ ! -f $tgz_name ];then
+    echo "Please rum \"pdinit\" from current directory"
+    exit 1
+fi
+
+#create script
+mkdir -p /tmp/pb
+sname=/tmp/pb/$(basename $tgz_name)_$(date +%s).sh
+echo "echo ----------------------">${sname}
+echo "cd $PBROOT">>${sname}
+echo "$@">>${sname}
+echo "echo ----------------------">>${sname}
+
+sudo env PBROOT=$PBROOT /usr/sbin/pbuilder execute --basetgz $tgz_name --bindmounts $PBROOT --save-after-exec -- ${sname} 
+
+#finalisy
+rm ${sname}

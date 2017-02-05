@@ -1,0 +1,21 @@
+#/bin/bash
+
+. /etc/pb.cfg
+
+if [ ! -f $tgz_name ];then
+    echo "Please rum \"pdinit\" from current directory"
+    exit 1
+fi
+
+#parse) comstring
+for pkg in $@
+do
+    pkgs+=$pkg" "
+done
+
+#update packages for image
+if [ -n "$pkgs" ];then
+    sudo env PBROOT=$PBROOT /usr/sbin/pbuilder update --basetgz $tgz_name --extrapackages "$pkgs"
+else
+    echo "Add package names as arguments comstring"
+fi

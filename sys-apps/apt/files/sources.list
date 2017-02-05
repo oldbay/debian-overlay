@@ -1,0 +1,15 @@
+#deb cdrom:[OS Astra Linux 1.4 smolensk - amd64 DVD ]/ smolensk contrib main non-free
+
+deb file:/var/cache/pbuilder/tmprepo astra14 main
+
+deb ftp://127.0.0.1/smolensk-1.4-install smolensk contrib main non-free
+deb ftp://127.0.0.1/smolensk-1.4-devel smolensk contrib main non-free
+#deb ftp://127.0.0.1/vega astra14 main
+
+deb-src http://mirror.yandex.ru/debian/ wheezy main contrib non-free
+deb-src http://mirror.yandex.ru/debian/ wheezy-backports main contrib non-free
+
+#deb-src http://mirror.yandex.ru/debian/ jessie main
+#deb-src http://mirror.yandex.ru/debian/ stretch main
+#deb-src http://mirror.yandex.ru/debian/ testing main
+#deb-src http://mirror.yandex.ru/debian/ unstable main

@@ -1,0 +1,23 @@
+#/bin/bash
+
+. /etc/pb.cfg
+
+#add tgz image
+if [ -f $tgz_name ];then
+    sudo env HOME=/root rm $tgz_name
+else
+    sudo env HOME=/root mkdir -p `dirname ${tgz_name}`
+fi
+
+#copy base tgz
+base_tgz=$(dirname ${pbimages_dir})/base.tgz
+if [ -f "$base_tgz" ];then
+    sudo env HOME=/root cp ${base_tgz} ${tgz_name}
+else
+    echo "Please start \"pbuilder create\" from superuser"
+fi
+
+#update packages for image
+if [ -n "$1" ];then
+    $(dirname ${pbimages_dir})/scripts/pbupd $@
+fi

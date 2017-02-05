@@ -1,0 +1,90 @@
+#!/usr/bin/python3
+# Copyright: © Canonical Ltd 2014
+
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+
+# You should have received a copy of the GNU General Public License along with
+# this package; if not, write to the Free Software Foundation, Inc., 51
+# Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+
+# Author: Iain Lane <iain.lane@canonical.com>
+
+# Many GNOME applications are switching to DBus activatable desktop files, with
+# names of the form org.gnome.foo.desktop. Renaming desktop files causes
+# problems including with launchers and mimetype associations. Until desktop
+# file parsers can handle this better, we should continue to provide the old
+# name. To avoid showing the same entry twice, we mark the new desktop file as
+# NoDisplay.
+
+from gi.repository import GLib
+
+import argparse
+import sys
+
+
+def try_remove_key(keyfile, group, key):
+    assert group is not None
+    assert key is not None
+    try:
+        keyfile.remove_key(group, key)
+    except GLib.Error:
+        return
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Make a compatibility desktop file')
+    parser.add_argument('currentfile', metavar='infile', nargs=1,
+                        help='The existing desktop file')
+    parser.add_argument('newfile', metavar='outfile', nargs=1,
+                        help='The output desktop file')
+    args = parser.parse_args()
+    old_keyfile = GLib.KeyFile.new()
+    new_keyfile = GLib.KeyFile.new()
+
+    try:
+        GLib.KeyFile.load_from_file(old_keyfile,
+                                    args.currentfile[0],
+                                    GLib.KeyFileFlags.KEEP_COMMENTS |
+                                    GLib.KeyFileFlags.KEEP_TRANSLATIONS)
+        GLib.KeyFile.load_from_file(new_keyfile,
+                                    args.currentfile[0],
+                                    GLib.KeyFileFlags.KEEP_COMMENTS |
+                                    GLib.KeyFileFlags.KEEP_TRANSLATIONS)
+    except GLib.Error as e:
+        print("Couldn't load: %s" % e, file=sys.stderr)
+        sys.exit(1)
+
+    try_remove_key(new_keyfile,
+                   GLib.KEY_FILE_DESKTOP_GROUP,
+                   "DBusActivatable")
+    try_remove_key(new_keyfile,
+                   GLib.KEY_FILE_DESKTOP_GROUP,
+                   "MimeType")
+    old_keyfile.set_value(GLib.KEY_FILE_DESKTOP_GROUP,
+                          "NoDisplay",
+                          "true")
+
+    try:
+        old_keyfile.save_to_file(args.currentfile[0])
+    except GLib.Error as e:
+        print("Couldn't save %s: %s" % (args.currentfile[0], e))
+        sys.exit(1)
+
+    try:
+        new_keyfile.save_to_file(args.newfile[0])
+    except GLib.Error as e:
+        print("Couldn't save %s: %s" % (args.newfile[0], e))
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

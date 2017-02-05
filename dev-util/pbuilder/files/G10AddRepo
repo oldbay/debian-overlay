@@ -1,0 +1,9 @@
+#! /bin/bash
+
+echo "Package: *" >/etc/apt/preferences.d/local-pin.pref
+echo "Pin: release pbuilder" >>/etc/apt/preferences.d/local-pin.pref
+echo "Pin-Priority: 900" >>/etc/apt/preferences.d/local-pin.pref
+
+apt-get update
+
+mkdir -p /var/cache/pbuilder/tmprepo

@@ -1,0 +1,11 @@
+#/bin/bash
+
+. /etc/pb.cfg
+
+if [ ! -f $tgz_name ];then
+    echo "Please rum \"pdinit\" from current directory"
+    exit 1
+fi
+
+sudo env HOME=/root rm $tgz_name
+sudo env HOME=/root find $pbimages_dir -empty -type d -delete

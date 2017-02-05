@@ -1,0 +1,26 @@
+Index: pbuilder/Makefile
+===================================================================
+--- a/Makefile
++++ b/Makefile
+@@ -153,7 +153,6 @@ CHECK_SCRIPTS += $(foreach d,$(ALLDIRS),
+ 
+ all:
+ 	$(MAKE) -C pbuildd $@
+-	$(MAKE) -C Documentation $@
+ 
+ check: export PBUILDER_CHECKOUT := $(CURDIR)
+ check:
+@@ -174,7 +173,6 @@ clean:
+ 		testsuite/testbuild2 \
+ 		testsuite/regression/work
+ 	$(MAKE) -C pbuildd $@
+-	$(MAKE) -C Documentation $@
+ 
+ TAGS:
+ 	etags pbuilder-* pbuilder
+@@ -191,5 +189,4 @@ install:
+ 	# install -aptitude flavour as the default satisfydepends
+ 	ln -sf pbuilder-satisfydepends-aptitude $(PKGLIBDIR)/pbuilder-satisfydepends
+ 	$(MAKE) -C pbuildd $@
+-	$(MAKE) -C Documentation $@
+ 

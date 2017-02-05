@@ -1,0 +1,22 @@
+#!/bin/bash 
+
+codename="pbuilder"
+
+#sudo apt-get update -o Dir::Etc::sourcelist="/var/cache/pbuilder/conf/sources.list"
+#/ust/bin/apt-get update
+#sleep 1
+rm /var/cache/apt/pkgcache.bin
+rm /var/lib/apt/lists/_var_cache_pbuilder_tmprepo_dists_${codename}_main_binary-amd64_Packages
+rm /var/lib/apt/lists/_var_cache_pbuilder_tmprepo_dists_${codename}_contrib_binary-amd64_Packages
+rm /var/lib/apt/lists/_var_cache_pbuilder_tmprepo_dists_${codename}_non-free_binary-amd64_Packages
+rm /var/lib/apt/lists/_var_cache_pbuilder_tmprepo_dists_${codename}_vega_binary-amd64_Packages
+rm /var/lib/apt/lists/_var_cache_pbuilder_tmprepo_dists_${codename}_Release
+/usr/bin/apt-get clean all
+sleep 1
+/usr/bin/apt-get update
+sleep 2
+/usr/bin/apt-get clean all
+sleep 1
+/usr/bin/apt-get update
+#sleep 1
+exit 0
