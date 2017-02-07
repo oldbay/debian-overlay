@@ -1,0 +1,56 @@
+#! /bin/bash
+
+DEF_CODENAME="astra14"
+
+# paks
+if [ -n "$1" ];then
+    PKGS_DIR=$1
+    echo "PKGS DIR: ${PKGS_DIR}"
+else
+    echo "ERROR: Please enter Packages dir for create Repository"
+    exit 1
+fi
+
+# repo
+if [ -n "$2" ];then
+    REPO_PATH=$2
+    echo "REPO PATH: ${REPO_PATH}"
+else
+    echo "ERROR: Please enter Repository path"
+    exit 1
+fi
+
+# repo
+if [ -n "$3" ];then
+    CODENAME=$3
+    echo "CODENAME: ${CODENAME}"
+else
+    CODENAME=${DEF_CODENAME}
+    echo "USE default CODENAME: ${CODENAME}"
+fi
+
+#create repo conf
+mkdir -p ${REPO_PATH}/conf
+if [ $? -ne 0 ];then
+    echo "ERROR: Not create ${REPO_PATH}"
+    exit 1
+fi
+repconf=${REPO_PATH}/conf/distributions
+if [ ! -f ${repconf} ];then
+    echo "Origin: Vega">${repconf}
+    echo "Codename: ${CODENAME}">>${repconf}
+    echo "Architectures: amd64 source">>${repconf}
+    echo "Components: main contrib non-free vega">>${repconf}
+    echo "UDebComponents: main contrib non-free vega">>${repconf}
+fi
+
+#add template source list
+mkdir -p ${REPO_PATH}/etc/apt
+aptcfg=${REPO_PATH}/etc/apt/sources.list
+if [ ! -f ${aptcfg} ];then
+    echo "deb file:/mnt/repo ${CODENAME} main contrib non-free vega">${aptcfg}
+fi
+
+#create repo
+reprepro -b ${REPO_PATH} includedeb ${CODENAME} ${PKGS_DIR}/*.deb
+

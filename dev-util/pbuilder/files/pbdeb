@@ -1,0 +1,186 @@
+#!/bin/bash
+
+. /etc/pb.cfg
+
+ERR_CODE=0
+SRC_DIR="tc_build"
+PKG_DIR="tc_pkgs"
+
+err_test(){
+    if [ ${ERR_CODE} -ne 0 ];then
+        exit 1
+    fi
+}
+
+
+#init version
+if [ -n "$1" ];then
+    if [ -f "/etc/pbuilderrc.$1" ];then
+        . /etc/pbuilderrc.$1
+        DEB_VER=$1
+    else
+        echo "ERROR: Config file /etc/pbuilderrc.$1 not found"
+        exit 1
+    fi
+else
+    echo "ERROR: Please enter init version"
+    exit 1
+fi
+
+# Name
+if [ -n "$2" ];then
+    PR_NAME=$2
+    echo "NAME: ${PR_NAME}"
+else
+    echo "ERROR: Please enter Project name"
+    exit 1
+fi
+
+# Revision
+if [ -n "$3" ];then
+    SVN_REV=$3
+    echo "SVN Revision: ${SVN_REV}"
+else
+    echo "ERROR: Please enter Project SVN Revision"
+    exit 1
+fi
+
+# Build
+if [ -n "$4" ];then
+    BUILD_NUM=$4
+    echo "BUILD Number: ${BUILD_NUM}"
+else
+    echo "ERROR: Please enter Debian scenario build number"
+    exit 1
+fi
+
+#Clear old build
+echo "STEP: Clear old build directory"
+#rm -rf ./.subversion
+rm -rf ./${SRC_DIR}
+rm -rf ./${PKG_DIR}
+
+#Copy debian scenario
+echo "STEP: Copy debian scenario"
+tar xvpf ${PR_PATH}/${PR_NAME}/${DEB_DIR}/${BUILD_NUM}.${DEB_ARH} -C ./
+ERR_CODE=$? && err_test
+
+#create changelog
+echo "STEP: Create cangelog"
+if [ -f ./debian/changelog.sh ];then
+    #hack svn version 1.6 -1.8
+    if [ -d ./.svn ];then
+        svn info
+        if [ $? -ne 0 ];then
+            cp -r ./.svn ./1.6_svn
+            svn upgrade
+        fi
+    fi
+    #changelog
+    env SVN_REV=${SVN_REV} sh ./debian/changelog.sh > ./debian/changelog
+    #hack svn version 1.8 -1.6
+    if [ -d ./1.6_svn ];then
+        rm -rf ./.svn
+        mv ./1.6_svn ./.svn
+    fi
+else
+    echo "Wrong package format: debian/changelog.sh not found"
+    exit 1
+fi
+
+#Create work dir
+echo "STEP: Create work dir"
+mkdir -p ./${SRC_DIR}
+find . -maxdepth 1 -not -path "./${SRC_DIR}" -exec mv -t ./${SRC_DIR}/ {} \+ >/dev/null 2>&1
+
+#pdebuild
+echo "STEP: Build package"
+mkdir -p ./${PKG_DIR}
+cd ./${SRC_DIR}
+echo yes | sudo env SVN_REV=${SVN_REV} pdebuild --buildresult ../${PKG_DIR} -- --basetgz ${BASETGZ} --hookdir ${HOOKDIR} --aptcache ${APTCACHE}
+ERR_CODE=$?
+cd ../
+sudo env chown --reference=${SRC_DIR} -R ${SRC_DIR}
+sudo env chown --reference=${PKG_DIR} -R ${PKG_DIR}
+sudo env rm -rf ./.subversion
+rm *.deb
+rm *.dsc
+rm *.changes
+rm *.tar.{gz,bz2,xz}
+rm *.build
+# remove build dir
+#mv ${SRC_DIR}/* ./
+rm -rf ./${SRC_DIR}
+err_test
+
+#Test repo path
+echo "STEP: Test repo path"
+if [ ! -d ${REPO_PATH} ];then
+    echo "Repo directory not found"
+    exit 1
+fi
+
+
+#revision repo
+#Create revision repo dir
+echo "STEP: Create revision repo dir"
+REPO_FULL_DIR=${REPO_PATH}/${PR_NAME}/${DEB_VER}/svn${SVN_REV}
+rm -rf ${REPO_FULL_DIR}
+mkdir -p ${REPO_FULL_DIR}
+ERR_CODE=$? && err_test
+
+#Create revision repo config
+echo "STEP: Create revision repo config"
+mkdir -p ${REPO_FULL_DIR}/conf
+repconf=${REPO_FULL_DIR}/conf/distributions
+echo "Origin: Vega">${repconf}
+echo "Codename: ${CODENAME}">>${repconf}
+echo "Architectures: amd64 source">>${repconf}
+echo "Components: main contrib non-free vega">>${repconf}
+echo "UDebComponents: main contrib non-free vega">>${repconf}
+ERR_CODE=$? && err_test
+
+#Create revision repo
+echo "STEP: Create revision repo"
+ch_files=`ls ${PKG_DIR}/*.changes`
+for chfile in $ch_files;do
+    reprepro -b ${REPO_FULL_DIR} \
+             --ignore=wrongdistribution \
+             --ignore=missingfile \
+             include ${CODENAME} ${chfile}
+    ERR_CODE=$? && err_test
+done
+
+
+#all repo
+#Create all repo dir
+echo "STEP: Create all repo dir"
+REPO_FULL_DIR=${REPO_PATH}/all/${DEB_VER}
+mkdir -p ${REPO_FULL_DIR}
+ERR_CODE=$? && err_test
+
+#Create revision all config
+echo "STEP: Create all repo config"
+repconf=${REPO_FULL_DIR}/conf/distributions
+if [ ! -f ${repconf} ];then
+    mkdir -p ${REPO_FULL_DIR}/conf
+    echo "Origin: Vega">${repconf}
+    echo "Codename: ${CODENAME}">>${repconf}
+    echo "Architectures: amd64 source">>${repconf}
+    echo "Components: main contrib non-free vega">>${repconf}
+    echo "UDebComponents: main contrib non-free vega">>${repconf}
+    ERR_CODE=$? && err_test
+fi
+
+#Create all repo
+echo "STEP: Create all repo"
+ch_files=`ls ${PKG_DIR}/*.changes`
+for chfile in $ch_files;do
+    reprepro -b ${REPO_FULL_DIR} \
+             --ignore=wrongdistribution \
+             --ignore=missingfile \
+             include ${CODENAME} ${chfile}
+    ERR_CODE=$? && err_test
+done
+
+exit 0

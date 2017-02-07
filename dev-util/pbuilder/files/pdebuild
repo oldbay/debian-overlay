@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#init version
+if [ -n "$1" ];then
+    if [ -f "/etc/pbuilderrc.$1" ];then
+        . /etc/pbuilderrc.$1
+    else
+        echo "ERROR: Config file /etc/pbuilderrc.$1 not found"
+        exit 1
+    fi
+else
+    echo "ERROR: Please enter init version"
+    exit 1
+fi
+
+sudo env SVN_REV=${SVN_REV} pdebuild -- --basetgz ${BASETGZ} --hookdir ${HOOKDIR} --aptcache ${APTCACHE}

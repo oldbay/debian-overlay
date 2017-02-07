@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 . /etc/pb.cfg
 
@@ -15,7 +15,7 @@ done
 
 #update packages for image
 if [ -n "$pkgs" ];then
-    sudo env PBROOT=$PBROOT /usr/sbin/pbuilder update --basetgz $tgz_name --extrapackages "$pkgs"
+    sudo env /usr/sbin/pbuilder update --basetgz $tgz_name --extrapackages "$pkgs"
 else
     echo "Add package names as arguments comstring"
 fi

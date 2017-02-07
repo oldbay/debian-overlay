@@ -1,5 +1,0 @@
-#! /bin/bash
-
-if [ "$PBROOT" != "$HOME" ];then
-    echo "cd $PBROOT">>$HOME/.bashrc
-fi

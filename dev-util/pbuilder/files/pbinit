@@ -1,23 +1,29 @@
-#/bin/bash
+#!/bin/bash
 
 . /etc/pb.cfg
 
-#add tgz image
-if [ -f $tgz_name ];then
-    sudo env HOME=/root rm $tgz_name
+#init version
+if [ -n "$1" ];then
+    if [ -f "/etc/pbuilderrc.$1" ];then
+        . /etc/pbuilderrc.$1
+    else
+        echo "Config file /etc/pbuilderrc.$1 not found"
+        exit 1
+    fi
 else
-    sudo env HOME=/root mkdir -p `dirname ${tgz_name}`
+    echo "Please insert init version"
+    exit 1
 fi
 
 #copy base tgz
-base_tgz=$(dirname ${pbimages_dir})/base.tgz
-if [ -f "$base_tgz" ];then
-    sudo env HOME=/root cp ${base_tgz} ${tgz_name}
+if [ -f "$BASETGZ" ];then
+    if [ -f $tgz_name ];then
+        sudo env HOME=/root rm $tgz_name
+    else
+        sudo env HOME=/root mkdir -p `dirname ${tgz_name}`
+    fi
+    sudo env HOME=/root cp ${BASETGZ} ${tgz_name}
 else
-    echo "Please start \"pbuilder create\" from superuser"
+    echo "Please start \"pbuilder create --configfile /etc/pbuilderrc.$1\" from superuser"
 fi
 
-#update packages for image
-if [ -n "$1" ];then
-    $(dirname ${pbimages_dir})/scripts/pbupd $@
-fi

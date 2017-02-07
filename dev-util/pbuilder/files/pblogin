@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 . /etc/pb.cfg
 
@@ -7,4 +7,24 @@ if [ ! -f $tgz_name ];then
     exit 1
 fi
 
-sudo env PBROOT=$PBROOT /usr/sbin/pbuilder login --basetgz $tgz_name --bindmounts $PBROOT --save-after-login
+# create csv
+if [ -n "$DISPLAY" ];then
+    XAUTH=`xauth list $DISPLAY`
+else
+    XAUTH=""
+fi
+CSV=$(echo "$PBROOT" && echo "|" && echo "$XAUTH")
+
+sudo env CSV="$CSV" /usr/sbin/pbuilder login --basetgz $tgz_name --bindmounts $PBROOT --save-after-login $@
+
+#useername directory correct from user
+for user_dir in $user_dirs
+do
+    echo $PBROOT|grep ${user_dir} >/dev/null 2>&1
+    if [ $? -eq 0 ];then
+        sudo env HOME=/root chown --reference=$PBROOT -R $PBROOT
+    fi
+done
+
+exit 0
+

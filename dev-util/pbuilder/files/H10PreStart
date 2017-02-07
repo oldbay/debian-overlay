@@ -1,6 +1,12 @@
 #! /bin/bash
-RepoURL="127.0.0.1"
+RepoURL="repo"
 codename="pbuilder"
+
+#CSV parse
+if [ -n "$CSV" ];then
+    PBROOT=`echo ${CSV}| awk -F '|' '{print $1}'`
+    XAUTH=`echo ${CSV}| awk -F '|' '{print $2}'`
+fi
 
 repo_add(){
     cat /etc/apt/sources.list|grep "$repo" >/dev/null 2>&1
@@ -13,14 +19,6 @@ repo_del(){
     sed -i "/$repo/d" /etc/apt/sources.list
 }
 
-#add pod repo
-#repo="deb ftp://${RepoURL}/vega astra14_gst10 main contrib non-free vega"
-#repo_add
-#repo="deb ftp://${RepoURL}/vega astra14_qgis main contrib non-free vega"
-#repo_add
-#repo="deb ftp://${RepoURL}/vega astra14_training main contrib non-free vega"
-#repo_add
-
 # add or remove tmprepo
 repo="deb file:/var/cache/pbuilder/tmprepo ${codename} main contrib non-free vega"
 if [ -f /var/cache/pbuilder/tmprepo/dists/${codename}/main/binary-amd64/Packages ];then
@@ -29,3 +27,18 @@ else
     repo_del
 fi
     apt-get update
+
+#bashrc
+if [ "$PBROOT" != "$HOME" ];then
+    echo "cd $PBROOT">$HOME/.bashrc
+fi
+
+# X forvard
+# X redirect only from ssh -X
+if [ "$XAUTH" != "" ];then
+    echo "Start X Display"
+    apt-get -y install xauth
+    xauth add ${XAUTH}
+else
+    echo "Start Console mode"
+fi

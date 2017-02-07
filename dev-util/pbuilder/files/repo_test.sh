@@ -32,7 +32,7 @@ orbhans(){
             echo "PACKAGE: $name VER: $ver TYPE: $type"
             echo "-----Reprepro INFO-----"
             reprepro -b ${repo} ls $name
-            echo -n "Remove ${pkg} (y/n)? n"
+            echo -n "Remove ${pkg_path} (y/n)? n"
             read sel
             if [ "$sel" == "y" ]||[ "$sel" == "Y" ]||[ "$sel" == "yes" ]||[ "$sel" == "Yes" ]||[ "$sel" == "YES" ];then
                 if [ "$type" == "deb" ];then
@@ -46,6 +46,7 @@ orbhans(){
                     rm $pkg_path
                     for pkg_file in $pkg_filelist
                     do
+                        # orig file analis ???
                         echo "REMOVE: ${pkg_dir}/${pkg_file}"
                         rm ${pkg_dir}/${pkg_file}
                     done

@@ -38,15 +38,30 @@ src_install() {
 
     insinto /etc
     doins ${FILESDIR}/pbuilderrc
+    doins ${FILESDIR}/pbuilderrc.astra14
+    doins ${FILESDIR}/pbuilderrc.astra15
     doins ${FILESDIR}/pb.cfg
 
-    exeinto /var/cache/pbuilder/hooks
+    #exeinto /var/cache/pbuilder/hooks
+    #exeopts -m755
+    #doexe ${FILESDIR}/B10CreateRepo
+    #doexe ${FILESDIR}/E10PkgsToImage
+    #doexe ${FILESDIR}/G10AddRepo
+    #doexe ${FILESDIR}/H10PreStart
+
+    exeinto /var/cache/pbuilder/hooks/astra14
     exeopts -m755
     doexe ${FILESDIR}/B10CreateRepo
-    doexe ${FILESDIR}/F10PbLogin
     doexe ${FILESDIR}/E10PkgsToImage
     doexe ${FILESDIR}/G10AddRepo
-    doexe ${FILESDIR}/H10PreStart
+    doexe ${FILESDIR}/H10PreStart.astra14
+
+    exeinto /var/cache/pbuilder/hooks/astra15
+    exeopts -m755
+    doexe ${FILESDIR}/B10CreateRepo
+    doexe ${FILESDIR}/E10PkgsToImage
+    doexe ${FILESDIR}/G10AddRepo
+    doexe ${FILESDIR}/H10PreStart.astra15
 
     exeinto /var/cache/pbuilder/scripts
     exeopts -m755
@@ -58,10 +73,14 @@ src_install() {
     dosym /var/cache/pbuilder/scripts/copyrepo.sh /usr/bin/pbuilder_copyrepo
     doexe ${FILESDIR}/repo_arh.sh
     dosym /var/cache/pbuilder/scripts/repo_arh.sh /usr/bin/pbuilder_repo_arh
+    doexe ${FILESDIR}/repo_find.sh
+    dosym /var/cache/pbuilder/scripts/repo_find.sh /usr/bin/pbuilder_repo_find
     doexe ${FILESDIR}/pkgcopy.sh
     dosym /var/cache/pbuilder/scripts/pkgcopy.sh /usr/bin/pbuilder_pkgcopy
     doexe ${FILESDIR}/repo_test.sh
     dosym /var/cache/pbuilder/scripts/repo_test.sh /usr/bin/pbuilder_repo_test
+    doexe ${FILESDIR}/genppa
+    dosym /var/cache/pbuilder/scripts/genppa /usr/bin/pbuilder_genppa
     doexe ${FILESDIR}/pbinit
     dosym /var/cache/pbuilder/scripts/pbinit /usr/bin/pb_init
     doexe ${FILESDIR}/pbupd
@@ -72,8 +91,12 @@ src_install() {
     dosym /var/cache/pbuilder/scripts/pblogin /usr/bin/pb_login
     doexe ${FILESDIR}/pbrun
     dosym /var/cache/pbuilder/scripts/pbrun /usr/bin/pb_run
-    doexe ${FILESDIR}/pbtc
-    dosym /var/cache/pbuilder/scripts/pbtc /usr/bin/pb_tc
+    doexe ${FILESDIR}/pbdeb
+    dosym /var/cache/pbuilder/scripts/pbdeb /usr/bin/pb_deb
+    doexe ${FILESDIR}/pbdebuild
+    dosym /var/cache/pbuilder/scripts/pbdebuild /usr/bin/pb_pdebuild
+    doexe ${FILESDIR}/pbuilder
+    dosym /var/cache/pbuilder/scripts/pbdebuild /usr/bin/pb_pbuilder
 
     insinto /usr/share/man/man1
     doman ${FILESDIR}/debuild-pbuilder.1
@@ -85,7 +108,8 @@ src_install() {
     insinto /usr/share/man/man8
     doman ${FILESDIR}/pbuilder.8
 
-    mkdir -p ${D}/var/cache/pbuilder/aptcache
+    mkdir -p ${D}/var/cache/pbuilder/aptcache/astra14
+    mkdir -p ${D}/var/cache/pbuilder/aptcache/astra15
     mkdir -p ${D}/var/cache/pbuilder/build
     mkdir -p ${D}/var/cache/pbuilder/cache
     mkdir -p ${D}/var/cache/pbuilder/result
